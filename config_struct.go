@@ -16,6 +16,7 @@ type Option struct {
 	Port      uint          `description:"Filter by port, if either source or target port is matched, the packet will be processed."`
 	Host      string        `description:"Filter by request host, using wildcard match(*, ?)"`
 	Uri       string        `description:"Filter by request url path, using wildcard match(*, ?)"`
+	Exclude   string        `description:"Exclude by request url path, using regexp"`
 	Status    string        `description:"Filter by response status code. Can use range. eg: 200, 200-300 or 200:300-400"`
 	StatusSet *IntSet       `ignore:"true"`
 	Force     bool          `description:"Force print unknown content-type http body even if it seems not to be text content"`

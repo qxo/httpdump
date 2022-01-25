@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"regexp"
 
 	"github.com/hsiafan/glow/iox/filex"
 	"github.com/hsiafan/httpdump/httpport"
@@ -86,6 +87,7 @@ func (h *HTTPTrafficHandler) handle(connection *TCPConnection) {
 	responseReader := bufio.NewReader(connection.downStream)
 	defer discardAll(responseReader)
 
+	reExclude, _ := regexp.Compile(h.option.Exclude)
 	for {
 		h.buffer = new(bytes.Buffer)
 		filtered := false
@@ -98,11 +100,14 @@ func (h *HTTPTrafficHandler) handle(connection *TCPConnection) {
 			}
 			break
 		}
-
-		if h.option.Host != "" && !wildcardMatch(req.Host, h.option.Host) {
+ 
+		if h.option.Exclude != "" && reExclude.MatchString(req.RequestURI) {
 			filtered = true
 		}
-		if h.option.Uri != "" && !wildcardMatch(req.RequestURI, h.option.Uri) {
+		if !filtered && h.option.Host != "" && !wildcardMatch(req.Host, h.option.Host) {
+			filtered = true
+		}
+		if !filtered && h.option.Uri != "" && !wildcardMatch(req.RequestURI, h.option.Uri) {
 			filtered = true
 		}
 
