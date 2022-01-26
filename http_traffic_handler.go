@@ -232,7 +232,7 @@ var blockHeaders = map[string]bool{
 	"Content-Length":    true,
 	"Transfer-Encoding": true,
 	"Connection":        true,
-	"Accept-Encoding:":  true,
+	"Accept-Encoding":  true,
 }
 
 // print http request curl command
