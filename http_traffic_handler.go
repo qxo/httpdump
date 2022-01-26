@@ -232,7 +232,7 @@ var blockHeaders = map[string]bool{
 	"Content-Length":    true,
 	"Transfer-Encoding": true,
 	"Connection":        true,
-	"Accept-Encoding":  true,
+	"Accept-Encoding":   true,
 }
 
 // print http request curl command
@@ -256,7 +256,6 @@ func (h *HTTPTrafficHandler) printCurlRequest(req *httpport.Request) {
 	}
 	seq := 0
 	for name, values := range req.Header {
-		seq++
 		if blockHeaders[name] {
 			continue
 		}
@@ -265,13 +264,17 @@ func (h *HTTPTrafficHandler) printCurlRequest(req *httpport.Request) {
 				continue
 			}
 		}
-		for idx, value := range values {
-			if seq == len(req.Header) && idx == len(values)-1 {
-				h.writeLineFormat("    -H '%v: %v'\n", name, value)
+		seq++
+		for _, value := range values {
+			if seq == 1 {
+				h.writeLineFormat("    -H '%v: %v'", name, value)
 			} else {
-				h.writeLineFormat("    -H '%v: %v' \\\n", name, value)
+				h.writeLineFormat(" \\\n    -H '%v: %v'", name, value)
 			}
 		}
+	}
+	if seq > 0 {
+		h.writeLineFormat("\n")
 	}
 
 	if req.ContentLength == 0 || req.Method == "GET" || req.Method == "HEAD" || req.Method == "TRACE" ||
