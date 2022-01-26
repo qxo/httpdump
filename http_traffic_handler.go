@@ -12,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"regexp"
 
 	"github.com/hsiafan/glow/iox/filex"
 	"github.com/hsiafan/httpdump/httpport"
@@ -87,7 +86,6 @@ func (h *HTTPTrafficHandler) handle(connection *TCPConnection) {
 	responseReader := bufio.NewReader(connection.downStream)
 	defer discardAll(responseReader)
 
-	reExclude, _ := regexp.Compile(h.option.Exclude)
 	for {
 		h.buffer = new(bytes.Buffer)
 		filtered := false
@@ -100,8 +98,8 @@ func (h *HTTPTrafficHandler) handle(connection *TCPConnection) {
 			}
 			break
 		}
- 
-		if h.option.Exclude != "" && reExclude.MatchString(req.RequestURI) {
+
+		if h.option.ExcludeRe != nil && h.option.ExcludeRe.MatchString(req.RequestURI) {
 			filtered = true
 		}
 		if !filtered && h.option.Host != "" && !wildcardMatch(req.Host, h.option.Host) {
@@ -241,7 +239,16 @@ func (h *HTTPTrafficHandler) printCurlRequest(req *httpport.Request) {
 
 	h.writeLine()
 	h.writeLine(strings.Repeat("*", 10), " REQUEST ", h.key.srcString(), " -----> ", h.key.dstString(), " // ", h.startTime.Format(time.RFC3339Nano))
-	h.writeLineFormat("curl -X %v 'http://%v%v' \\\n", req.Method, h.key.dstString(), req.RequestURI)
+
+	hostAndPort := h.option.CurlHostPort
+	if hostAndPort == "Host" {
+		hostAndPort = req.Header.Get("Host");
+	}
+	if hostAndPort == "" {
+		hostAndPort = h.key.dstString()
+	}
+	h.writeLineFormat("curl -v -X %v 'http://%v%v' \\\n", req.Method, hostAndPort, req.RequestURI)
+
 	var reader io.ReadCloser
 	var deCompressed bool
 	if h.option.DumpBody {
@@ -254,9 +261,16 @@ func (h *HTTPTrafficHandler) printCurlRequest(req *httpport.Request) {
 	if deCompressed {
 		defer reader.Close()
 	}
+
 	seq := 0
 	for name, values := range req.Header {
 		if blockHeaders[name] {
+			continue
+		}
+		if h.option.CurlHostPort == "Host" && name == "Host" {
+			continue
+		}
+		if h.option.CurlHeaderExcludeRe != nil && h.option.CurlHeaderExcludeRe.MatchString(name) {
 			continue
 		}
 		if deCompressed {

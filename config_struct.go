@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"regexp"
 )
 
 // Command line options
@@ -17,11 +18,18 @@ type Option struct {
 	Host      string        `description:"Filter by request host, using wildcard match(*, ?)"`
 	Uri       string        `description:"Filter by request url path, using wildcard match(*, ?)"`
 	Exclude   string        `description:"Exclude by request url path, using regexp"`
+<<<<<<< HEAD
+=======
+	ExcludeRe *regexp.Regexp `ignore:"true"`
+>>>>>>> a9a6bbc (feat: -curl-header-exclude/--curl-host-port ...)
 	Status    string        `description:"Filter by response status code. Can use range. eg: 200, 200-300 or 200:300-400"`
 	StatusSet *IntSet       `ignore:"true"`
 	Force     bool          `description:"Force print unknown content-type http body even if it seems not to be text content"`
 	Pretty    bool          `description:"Try to format and prettify json content"`
 	Curl      bool          `description:"Output an equivalent curl command for each http request"`
+	CurlHeaderExclude     string    `description:"Exclude by request header for curl, using regexp"`
+	CurlHeaderExcludeRe  *regexp.Regexp    `ignore:"true"`
+	CurlHostPort          string    `description:"curl host and port for replace the url, Host=means using Host header as request HostPort"`
 	DumpBody  bool          `description:"dump http request/response body to file"`
 	Output    string        `description:"Write result to file [output] instead of stdout"`
 	Idle      time.Duration `default:"4m" description:"Idle time to remove connection if no package received"`
