@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime"
 	"time"
+	"regexp"
 
 	"strconv"
 	"sync"
@@ -100,6 +101,22 @@ func run(option *Option) error {
 			return fmt.Errorf("status range not valid %v", option.Status)
 		}
 		option.StatusSet = statusSet
+	}
+
+	if option.Exclude != "" {
+		exclude, err := regexp.Compile(option.Exclude)
+		if err != nil {
+			return fmt.Errorf("exclude not valid %v", option.Exclude)
+		}
+		option.ExcludeRe = exclude
+	}
+ 
+	if option.CurlHeaderExclude != "" {
+		curlHeaderExclude, err := regexp.Compile(option.CurlHeaderExclude)
+		if err != nil {
+			return fmt.Errorf("curl-header-exclude not valid %v", option.CurlHeaderExclude)
+		}
+		option.CurlHeaderExcludeRe = curlHeaderExclude
 	}
 
 	var packets chan gopacket.Packet
