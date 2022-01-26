@@ -241,7 +241,7 @@ func (h *HTTPTrafficHandler) printCurlRequest(req *httpport.Request) {
 
 	h.writeLine()
 	h.writeLine(strings.Repeat("*", 10), " REQUEST ", h.key.srcString(), " -----> ", h.key.dstString(), " // ", h.startTime.Format(time.RFC3339Nano))
-	h.writeLineFormat("curl -X %v http://%v%v \\\n", req.Method, h.key.dstString(), req.RequestURI)
+	h.writeLineFormat("curl -X %v 'http://%v%v' \\\n", req.Method, h.key.dstString(), req.RequestURI)
 	var reader io.ReadCloser
 	var deCompressed bool
 	if h.option.DumpBody {
